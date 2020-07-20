@@ -81,7 +81,7 @@
         <!-- Intro 头部显示 e -->
         <!-- Header 头部logo start -->
         <header id="header">
-    <a href="/" class="logo">ZOE SUN</a>
+    <a href="/" class="logo">ZOE SUN -></a>
 </header>
         <!-- Nav 导航条 start -->
         <nav id="nav" class="special" >
@@ -96,7 +96,7 @@
 	            <a href="#s1">分类</a>
 	                    <ul class="submenu">
 	                        <li>
-	                        
+	                        <a class="category-link" href="/categories/Technical/">Technical</a>
 	                    </ul>
 	        </li>
 	        
@@ -139,24 +139,18 @@
 </nav>
 
         <div id="main" >
-            <div class ="post_page_title_img" style="height: 25rem;background-image: url();background-position: center; background-repeat:no-repeat; background-size:cover;-moz-background-size:cover;overflow:hidden;" >
-                <a href="#" style="padding: 4rem 4rem 2rem 4rem ;"><h2 >Hello World</h2></a>
+            <div class ="post_page_title_img" style="height: 25rem;background-image: url(/images/helloworld.JPG);background-position: center; background-repeat:no-repeat; background-size:cover;-moz-background-size:cover;overflow:hidden;" >
+                <a href="#" style="padding: 4rem 4rem 2rem 4rem ;"><h2 >Golang踩坑 1</h2></a>
             </div>
             <!-- Post -->
             <div class="typo" style="padding: 3rem;">
-                <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html" target="_blank" rel="noopener">Deployment</a></p>
+                <h1 id="Golang踩坑-1"><a href="#Golang踩坑-1" class="headerlink" title="Golang踩坑 1"></a>Golang踩坑 1</h1><p>最近在实习，记录下我踩过的所有坑。   </p>
+<h3 id="需求："><a href="#需求：" class="headerlink" title="需求："></a>需求：</h3><p>mentor今天提了一个需求是：为不同的gRPC双向流打上标记，为了实现将特定的信息传送给特定的终端微服务，我们需要给每一个双向流打上它独有的名称和uuid。同时我们需要为所有的gPRPC开启验证操作，因此我们需要将Token信息从客户端传到服务端。因此我们需要找到一种办法让每个stream携带以上信息。  </p>
+<h3 id="坑："><a href="#坑：" class="headerlink" title="坑："></a>坑：</h3><p>本来想通过context对象自带的withValue()函数实现，但其实在client端为context打的标记并不能传到server端。  </p>
+<h3 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法:"></a>解决方法:</h3><h6 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a>客户端</h6><p>在客户端利用metadata结构创建一个包含目标键值对的metadata.MD对象，利用该对象创建一个context（使用NewOutgoingContext()函数：  </p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">md := metadata.Pairs(</span><br><span class="line">	<span class="string">"tag"</span>, name,</span><br><span class="line">	<span class="string">"uuid"</span>, uuid,</span><br><span class="line">)</span><br><span class="line">ctx, cancel := context.WithCancel(context.Background())</span><br><span class="line">ctx = metadata.NewOutgoingContext(ctx, md)</span><br></pre></td></tr></table></figure>
+<h6 id="服务端"><a href="#服务端" class="headerlink" title="服务端"></a>服务端</h6><p>在服务端使用FromIncomingContext()函数获取stream中携带的metadata信息，通过键访问值：  </p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">md2, _ := metadata.FromIncomingContext(stream.Context())</span><br><span class="line">     <span class="keyword">for</span> _, v := <span class="keyword">range</span> s.DeliverInfo[md2[<span class="string">"tag"</span>][<span class="number">0</span>]]&#123;</span><br><span class="line">		 ...</span><br><span class="line">	 &#125;</span><br></pre></td></tr></table></figure>
 
             </div>
 
