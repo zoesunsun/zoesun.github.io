@@ -139,18 +139,23 @@
 </nav>
 
         <div id="main" >
-            <div class ="post_page_title_img" style="height: 25rem;background-image: url(/images/helloworld.JPG);background-position: center; background-repeat:no-repeat; background-size:cover;-moz-background-size:cover;overflow:hidden;" >
-                <a href="#" style="padding: 4rem 4rem 2rem 4rem ;"><h2 >Golang踩坑 1</h2></a>
+            <div class ="post_page_title_img" style="height: 25rem;background-image: url(/images/blog2.JPG);background-position: center; background-repeat:no-repeat; background-size:cover;-moz-background-size:cover;overflow:hidden;" >
+                <a href="#" style="padding: 4rem 4rem 2rem 4rem ;"><h2 >分布式系统时钟同步</h2></a>
             </div>
             <!-- Post -->
             <div class="typo" style="padding: 3rem;">
-                <h1 id="Golang踩坑-1"><a href="#Golang踩坑-1" class="headerlink" title="Golang踩坑 1"></a>Golang踩坑 1</h1><p>最近在实习，记录下我踩过的所有坑。   </p>
-<h3 id="需求："><a href="#需求：" class="headerlink" title="需求："></a>需求：</h3><p>mentor今天提了一个需求是：为不同的gRPC双向流打上标记，为了实现将特定的信息传送给特定的终端微服务，我们需要给每一个双向流打上它独有的名称和uuid。同时我们需要为所有的gPRPC开启验证操作，因此我们需要将Token信息从客户端传到服务端。因此我们需要找到一种办法让每个stream携带以上信息。  </p>
-<h3 id="坑："><a href="#坑：" class="headerlink" title="坑："></a>坑：</h3><p>本来想通过context对象自带的withValue()函数实现，但其实在client端为context打的标记并不能传到server端。  </p>
-<h3 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法:"></a>解决方法:</h3><h6 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a>客户端</h6><p>在客户端利用metadata结构创建一个包含目标键值对的metadata.MD对象，利用该对象创建一个context（使用NewOutgoingContext()函数：  </p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">md := metadata.Pairs(</span><br><span class="line">	<span class="string">"tag"</span>, name,</span><br><span class="line">	<span class="string">"uuid"</span>, uuid,</span><br><span class="line">)</span><br><span class="line">ctx, cancel := context.WithCancel(context.Background())</span><br><span class="line">ctx = metadata.NewOutgoingContext(ctx, md)</span><br></pre></td></tr></table></figure>
-<h6 id="服务端"><a href="#服务端" class="headerlink" title="服务端"></a>服务端</h6><p>在服务端使用FromIncomingContext()函数获取stream中携带的metadata信息，通过键访问值：  </p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">md2, _ := metadata.FromIncomingContext(stream.Context())</span><br><span class="line">     <span class="keyword">for</span> _, v := <span class="keyword">range</span> s.DeliverInfo[md2[<span class="string">"tag"</span>][<span class="number">0</span>]]&#123;</span><br><span class="line">		 ...</span><br><span class="line">	 &#125;</span><br></pre></td></tr></table></figure>
+                <h1 id="分布式系统时钟同步"><a href="#分布式系统时钟同步" class="headerlink" title="分布式系统时钟同步"></a>分布式系统时钟同步</h1><h3 id="需求："><a href="#需求：" class="headerlink" title="需求："></a>需求：</h3><p>我们的项目主要由三种不同的节点组成：cloud节点、manager节点、微服务节点。由此产生了不同节点间校准时间的需求。在我们的系统中，只有cloud节点可与外网进行连接，其余节点均只能通过内网进行通讯。因此，只有cloud节点可以与互联网对时，其余节点均需要与cloud节点进行时间同步。所以我们需要设计一种模式来完成对时需求。 </p>
+<h3 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法:"></a>解决方法:</h3><p>如果我们系统中所有的节点都可以连接外网，就能够直接利用系统的NTP（Network Time Protocol网络时间协议）与公共NTP网络时间服务器完成对时。但我们的系统中只有cloud节点可与外网连接，因此，我们参考了NTP的实现模式，将cloud节点类比作NTP中的时间服务器，即系统中”权威的”时间源；其他节点通过gRPC call与这个时间源进行时间同步。</p>
+<h6 id="NTP协议工作原理："><a href="#NTP协议工作原理：" class="headerlink" title="NTP协议工作原理："></a>NTP协议工作原理：</h6><p>首先，两个节点需要进行一次ntp消息的请求和响应，以此计算出时间偏移：</p>
+<ol>
+<li>节点A发送ntp消息给节点B，消息包含发送时间戳T1；</li>
+<li>B收到ntp消息后，将接收时间T2写入该消息体；</li>
+<li>当B发送ntp响应消息给A时，将发送时间T3也写入该消息体；</li>
+<li>A收到响应ntp消息的时间记为T4；<br>Round trip 为（T4-T1）-（T3-T2）<br>时间偏移为（(T2-T1)+(T3-T4))/2<br><img src="/images/ntp.png" alt="avartar"><h3 id="代码实现："><a href="#代码实现：" class="headerlink" title="代码实现："></a>代码实现：</h3><h6 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a>客户端</h6>客户端通过gRPC接口将自己的本地时间戳（T1）发给服务器：<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">c := client.(cpb.CloudServiceClient)</span><br><span class="line">			request := &amp;cpb.TimeRequest&#123;TimeStamp: time.Now().UTC().Unix()&#125;</span><br><span class="line">			resp, err := c.SyncTime(context.Background(), request)</span><br></pre></td></tr></table></figure>
+<h6 id="服务端"><a href="#服务端" class="headerlink" title="服务端"></a>服务端</h6>服务器收到后记录自己的接受时间（T2），服务器计算（T2-T1），将该时间差及gRPC response的发送时间（T3）一起返回给客户端：<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Server)</span> <span class="title">SyncTime</span><span class="params">(ctx context.Context, in *cpb.TimeRequest)</span> <span class="params">(*cpb.TimeResponse, error)</span></span> &#123;</span><br><span class="line">	timestampT0 := in.TimeStamp</span><br><span class="line">	timestampT1 := time.Now().UTC().Unix()</span><br><span class="line">	duration := timestampT1 - timestampT0</span><br><span class="line">	result := &amp;cpb.TimeResponse&#123;</span><br><span class="line">		TimeStamp: time.Now().UTC().Unix(),</span><br><span class="line">		Duration:  duration,</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> result, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h6 id="客户端-1"><a href="#客户端-1" class="headerlink" title="客户端"></a>客户端</h6>客户端收到response时记录接收时间（T4），计算时间偏移（(T2-T1)+(T3-T4))/2。如果（T3+时间偏移）与T4的差大于五秒，则校准时间为T3。我们采用UTC时间进行时间计算，调整系统时间时，再将UTC时间转换为当地时间。<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">delta := (timeStampT3 - timeStampT2 + resp.Duration) / <span class="number">2</span></span><br><span class="line">timeStamp := timeStampT2 + delta</span><br><span class="line"><span class="keyword">if</span> math.Abs(<span class="keyword">float64</span>(timeStamp-timeStampT3)) &gt; <span class="number">5</span> &#123;</span><br><span class="line">	date := time.Unix(timeStampT2, <span class="number">0</span>).Local().Format(<span class="string">"2006-01-02 15:04:05.99999"</span>)</span><br><span class="line">	err = timeupdate.UpdateSystemDate(date)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> err</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
 
             </div>
 
@@ -213,8 +218,8 @@ $('.btn_click_load').click(function() {
 -->
 <script type="text/javascript">
     var disqus_config = function () {
-        this.page.url = 'http://yoursite.com/2020/07/20/hello-world/';  // Replace PAGE_URL with your page's canonical URL variable
-        this.page.identifier = 'http://yoursite.com/2020/07/20/hello-world/'; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        this.page.url = 'http://yoursite.com/2020/07/21/blog2/';  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = 'http://yoursite.com/2020/07/21/blog2/'; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
     };
 </script>
 
