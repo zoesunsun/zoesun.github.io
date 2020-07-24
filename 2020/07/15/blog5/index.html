@@ -1,0 +1,267 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+	<link rel="bookmark"  type="image/x-icon"  href="/img/logo_miccall.png"/>
+	<link rel="shortcut icon" href="/img/logo_miccall.png">
+	
+			    <title>
+    Hexo
+    </title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    <link rel="stylesheet" href="/css/mic_main.css" />
+    <link rel="stylesheet" href="/css/dropdownMenu.css" />
+    <meta name="keywords" content="zoesun" />
+    
+    	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	 
+    <noscript>
+        <link rel="stylesheet" href="/css/noscript.css" />
+    </noscript>
+    <style type="text/css">
+        body:before {
+          content: ' ';
+          position: fixed;
+          top: 0;
+          background: url('/img/bg.jpg') center 0 no-repeat;
+          right: 0;
+          bottom: 0;
+          left: 0;
+          background-size: cover; 
+        }
+    </style>
+
+			    
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script async type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/jquery.scrollex.min.js"></script>
+    <script src="/js/jquery.scrolly.min.js"></script>
+    <script src="/js/skel.min.js"></script>
+    <script src="/js/util.js"></script>
+    <script src="/js/main.js"></script>
+	
+<meta name="generator" content="Hexo 4.2.1"></head>
+    
+		
+<!-- Layouts -->
+
+
+
+<!--  代码渲染  -->
+<link rel="stylesheet" href="/css/prism_coy.css" />
+<link rel="stylesheet" href="/css/typo.css" />
+<!-- 文章页 -->
+<body class="is-loading">
+    <!-- Wrapper 外包 s-->
+    <div id="wrapper" class="fade-in">
+        <!-- Intro 头部显示 s -->
+        <!-- Intro 头部显示 e -->
+        <!-- Header 头部logo start -->
+        <header id="header">
+    <a href="/" class="logo">ZOE SUN -></a>
+</header>
+        <!-- Nav 导航条 start -->
+        <nav id="nav" class="special" >
+            <ul class="menu links" >
+			<!-- Homepage  主页  --> 
+			<li >
+	            <a href="/" rel="nofollow">主页</a>
+	        </li>
+			<!-- categories_name  分类   --> 
+	        
+	        <li class="active">
+	            <a href="#s1">分类</a>
+	                    <ul class="submenu">
+	                        <li>
+	                        <a class="category-link" href="/categories/Technical/">Technical</a>
+	                    </ul>
+	        </li>
+	        
+	        <!-- archives  归档   --> 
+	        
+	        
+		        <!-- Pages 自定义   -->
+		        
+		        <li>
+		            <a href="/about/" title="简历">
+		                简历
+		            </a>
+		        </li>
+		        
+		        <li>
+		            <a href="/tag/" title="标签">
+		                标签
+		            </a>
+		        </li>
+		        
+
+
+            </ul>
+            <!-- icons 图标   -->
+			<ul class="icons">
+                    
+                    <li>
+                        <a title="github" href="https://github.com/zoesunsun" target="_blank" rel="noopener">
+                            <i class="icon fa fa-github"></i>
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a title="linkedin" href="https://www.linkedin.com/in/zehua-sun-zoe/" target="_blank" rel="noopener">
+                            <i class="icon fa fa-linkedin"></i>
+                        </a>
+                    </li>
+                    
+			</ul>
+</nav>
+
+        <div id="main" >
+            <div class ="post_page_title_img" style="height: 25rem;background-image: url(/images/blog5.jpg);background-position: center; background-repeat:no-repeat; background-size:cover;-moz-background-size:cover;overflow:hidden;" >
+                <a href="#" style="padding: 4rem 4rem 2rem 4rem ;"><h2 >gRPC长连接设计</h2></a>
+            </div>
+            <!-- Post -->
+            <div class="typo" style="padding: 3rem;">
+                <h1 id="gRPC长连接设计（Golang）"><a href="#gRPC长连接设计（Golang）" class="headerlink" title="gRPC长连接设计（Golang）"></a>gRPC长连接设计（Golang）</h1><p>我的实习日记   </p>
+<h3 id="需求："><a href="#需求：" class="headerlink" title="需求："></a>需求：</h3><p>我目前正在做的项目中，系统本质上可以简单理解为客户端与服务器的交互。传统的交互模型中（至少在我所经历过的模型中）连接大多是采用应答模式，即发送一个request、接收相应的response。这种模式可以很好地匹配应与答，但无疑会频繁地建立与结束连接。在gRPC中，我们可以使用 bidirection stream（双向流长连接）来建立一个长连接，使数据都通过这个长连接管道进行传递，这将大大地减少建立与关闭连接所带来的开销。</p>
+<h3 id="gRPC-bidirection-stream："><a href="#gRPC-bidirection-stream：" class="headerlink" title="gRPC bidirection stream："></a>gRPC bidirection stream：</h3><p>我们的系统用Go语言进行开发，通过使用bidistream，建立并维护一个可以长时间保持网络联通状态的网络连接。而后我们把在双向流中传递的信息结构（struct）抽象为 message type + payload，通过这种方式可以在双向流中传递任意信息。在双向流模型中，客户端与服务端皆可通过自己的stream独立且按照设定好的规则向对方发送数据包，而不需要等待回复。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Message <span class="keyword">struct</span> &#123;</span><br><span class="line">	<span class="comment">//消息类型：</span></span><br><span class="line">	MessageType <span class="keyword">string</span></span><br><span class="line">	<span class="comment">//消息内容：二进制</span></span><br><span class="line">	Payload []<span class="keyword">byte</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="我们的设计"><a href="#我们的设计" class="headerlink" title="我们的设计:"></a>我们的设计:</h3><p>为了增强代码的鲁棒性、复用性，我们对系统的 bidistream 进行了重新设计，下面分别记录重构前后两种 bidistream 模型以及重构原因与思路：</p>
+<h4 id="Before："><a href="#Before：" class="headerlink" title="Before："></a>Before：</h4><p>起初，我们分别在每个manager与微服务中建立一个能连接到目标服务器的bidistream，并在其中启用多个goroutine，不同的goroutine完成特定的功能，包括发送HeartBeat信息、定期对时、接收并处理服务器下发的信息等等。项目之初采取这种设计的主要原因是我们发现cloud-manager与manager-microservice需要设计两套protocolbuffer，尽管两套相似度很高，但他们所传递的信息结构体在Go中仍然会被认作两种不同的结构体。这种设计思路的弊端也很明显，虽然两套连接的代码几乎相同，但仅仅因为数据结构不同，我们仍然需要将这段代码重复两次，大大降低了代码的复用程度。因此，需要对代码进行重构</p>
+<h4 id="After"><a href="#After" class="headerlink" title="After"></a>After</h4><p>经过对Go语言的进一步深入了解，Go语言中所有的数据类型都实现了空接口（interface{}），因此，我们可以通过interface{}将两种不同的结构体作为参数传入同一个函数，而后在函数中对传入的结构体进行类型解析，针对不同的结构体执行不同的逻辑，类似于java中的多态。<br>我们这次重构主要完成了以下两件事情：</p>
+<h6 id="抽象出客户端双向流函数，将双向流的数据收发功能与消息产生功能进行分离"><a href="#抽象出客户端双向流函数，将双向流的数据收发功能与消息产生功能进行分离" class="headerlink" title="抽象出客户端双向流函数，将双向流的数据收发功能与消息产生功能进行分离"></a>抽象出客户端双向流函数，将双向流的数据收发功能与消息产生功能进行分离</h6><ol>
+<li>思路：<br>我们在客户端的双向流函数中只保留两个goroutine，各自分别监控一个channel，其中监控downChan的goroutine负责接收服务端下发的数据并打入downChan，监控upChan的goroutine负责向服务端发送数据。其他用于生成向服务器发送消息的函数（ 如heartBeat()，logger()等 ）向upChan打入数据。另一个goroutine从downChan里取出数据，判断消息类型（messageType）并实现不同的功能。</li>
+</ol>
+<h6 id="将整套双向流抽象成为工具类"><a href="#将整套双向流抽象成为工具类" class="headerlink" title="将整套双向流抽象成为工具类"></a>将整套双向流抽象成为工具类</h6><ol>
+<li>思路：<br>两套ProtocolBuffer的主要矛盾点在于，在Go语言中，他俩通过stream传递的消息结构体是不同的数据类型，尽管二者的内容完全一样。同时我们意识到，我们在建立双向流的时候，需要由客户端本身将client对象、upChan和downChan作为参数传入，因此，我们可以根据传入的client对象的数据类型来建立传递不同消息类型的stream，根据stream的数据类型判定应该将待传消息封装成哪种类型的消息结构体。由此可将整套bidistream抽象为独立的工具类。</li>
+</ol>
+<p>（以下代码仅为示例，非最终生产代码。TypeA、TypeB 代表对应数据类型）</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(b *BidiConn)</span> <span class="title">getConnection</span><span class="params">(c <span class="keyword">interface</span>&#123;&#125;, upChan <span class="keyword">interface</span>&#123;&#125;, downChan <span class="keyword">interface</span>&#123;&#125;,...)</span> <span class="title">error</span></span> &#123;</span><br><span class="line">	<span class="comment">//获取client的类型:</span></span><br><span class="line">	c1 := fmt.Sprintf(<span class="string">"%T"</span>, c)</span><br><span class="line">	...</span><br><span class="line">	<span class="comment">//根据传入的client对象的数据类型来建立传递不同消息类型的stream:</span></span><br><span class="line">	<span class="keyword">switch</span> c1 &#123;</span><br><span class="line">	<span class="keyword">case</span> <span class="string">"*TypeA"</span>:</span><br><span class="line">		client := c.(TypeA)</span><br><span class="line">		stream, err := client.CloudConnection(ctx)</span><br><span class="line"></span><br><span class="line">		<span class="comment">//监控upChan的goroutine负责向服务端发送数据：</span></span><br><span class="line">		<span class="keyword">go</span> f1(stream, upChan, ...)</span><br><span class="line">		<span class="comment">//监控downChan的goroutine取出数据，判断消息类型并实现不同的功能：</span></span><br><span class="line">		<span class="keyword">go</span> f2(stream, downChan,...)</span><br><span class="line">		...</span><br><span class="line"></span><br><span class="line">	<span class="keyword">case</span> <span class="string">"*TypeB"</span>:</span><br><span class="line">		client := c.(TypeB)</span><br><span class="line">		stream, err := client.ManagerConnection(ctx)</span><br><span class="line"></span><br><span class="line">		<span class="comment">//监控upChan的goroutine负责向服务端发送数据：</span></span><br><span class="line">		<span class="keyword">go</span> f1(stream, upChan, ...)</span><br><span class="line">		<span class="comment">//监控downChan的goroutine取出数据，判断消息类型并实现不同的功能：</span></span><br><span class="line">		<span class="keyword">go</span> f2(stream, downChan, ...)</span><br><span class="line">		...</span><br><span class="line"></span><br><span class="line">	...</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//upChan helps to send data to up stream</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">f1</span><span class="params">(stream <span class="keyword">interface</span>&#123;&#125;, upChan <span class="keyword">interface</span>&#123;&#125;, ...)</span></span> &#123;</span><br><span class="line">	<span class="comment">// 获取stream的数据类型</span></span><br><span class="line">	t := fmt.Sprintf(<span class="string">"%T"</span>, stream)</span><br><span class="line">	<span class="comment">// 根据stream的数据类型判定应该将待传消息封装成哪种类型的消息结构体</span></span><br><span class="line">	<span class="keyword">switch</span> t &#123;</span><br><span class="line">	<span class="comment">//this upChan used for manager -&gt; cloud</span></span><br><span class="line">	<span class="keyword">case</span> <span class="string">"*TypeA"</span>:</span><br><span class="line">		s := stream.(TypeA)</span><br><span class="line">		uc := upChan.(<span class="keyword">chan</span> TypeA)</span><br><span class="line">		<span class="keyword">for</span> &#123;</span><br><span class="line">			req:= &lt;-uc</span><br><span class="line">			s.Send(&amp;req)</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//this upChan used for microservice -&gt; manager</span></span><br><span class="line">	<span class="keyword">case</span> <span class="string">"*TypeB"</span>:</span><br><span class="line">		s := stream.(TypeB)</span><br><span class="line">		uc := upChan.(<span class="keyword">chan</span> TypeB)</span><br><span class="line">		<span class="keyword">for</span> &#123;</span><br><span class="line">			req:= &lt;-uc</span><br><span class="line">			s.Send(&amp;req)</span><br><span class="line">		&#125;</span><br><span class="line">	...</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//downChan helps to receive data from up stream</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">f2</span><span class="params">(stream <span class="keyword">interface</span>&#123;&#125;,downChan <span class="keyword">interface</span>&#123;&#125;, ...)</span></span> &#123;</span><br><span class="line">	<span class="comment">//check stream's type (cloud pb/manager pb)</span></span><br><span class="line">	t := fmt.Sprintf(<span class="string">"%T"</span>, stream)</span><br><span class="line">	<span class="keyword">switch</span> t &#123;</span><br><span class="line">	<span class="comment">//this downChan used for manager to receive message from cloud</span></span><br><span class="line">	<span class="keyword">case</span> <span class="string">"*TypeA"</span>:</span><br><span class="line">		s := stream.(TypeA)</span><br><span class="line">		dc := downChan.(<span class="keyword">chan</span> TypeA)</span><br><span class="line">		<span class="keyword">for</span> &#123;</span><br><span class="line">				resp,_:= s.Recv()</span><br><span class="line">				dc &lt;- *resp</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//this default downChan used for manager to send message to microservices</span></span><br><span class="line">	<span class="keyword">case</span> <span class="string">"*TypeB"</span>:</span><br><span class="line">		s := stream.(TypeB)</span><br><span class="line">		dc := downChan.(<span class="keyword">chan</span> TypeB)</span><br><span class="line">		<span class="keyword">for</span> &#123;</span><br><span class="line">				resp, _:= s.Recv()</span><br><span class="line">				dc &lt;- *resp</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+            </div>
+
+            <!-- Post Comments -->
+            
+    <!-- 使用 DISQUS_CLICK -->
+<div id="disqus-comment">
+    <div id="disqus_thread"></div>
+
+<!-- add animation -->
+<style>
+	.disqus_click_btn {
+            line-height: 30px;
+            margin: 0;
+            min-width: 50px;
+            padding: 0 14px;
+            display: inline-block;
+            font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+            font-size: 14px;
+            font-weight: 400;
+            text-transform: uppercase;
+            letter-spacing: 0;
+            overflow: hidden;
+            will-change: box-shadow;
+            transition: box-shadow .2s cubic-bezier(.4, 0, 1, 1), background-color .2s cubic-bezier(.4, 0, .2, 1), color .2s cubic-bezier(.4, 0, .2, 1);
+            outline: 0;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            vertical-align: middle;
+            border: 0;
+            background: rgba(158, 158, 158, .2);
+            box-shadow: 0 2px 2px 0 rgba(0, 0, 0, .14), 0 3px 1px -2px rgba(0, 0, 0, .2), 0 1px 5px 0 rgba(0, 0, 0, .12);
+            color: #fff;
+            background-color: #7EC0EE;
+            text-shadow: 0
+        }
+</style>
+	
+<div class="btn_click_load" id="disqus_bt"> 
+    <button class="disqus_click_btn">点击查看评论</button>
+</div>
+
+<!--
+<script type="text/javascript">
+$('.btn_click_load').click(function() {
+    /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+    var disqus_shortname = 'http-miccall-tech'; // required: replace example with your forum shortname
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+
+    document.getElementById('disqus_bt').style.display = "none";
+});
+</script>
+-->
+<script type="text/javascript">
+    var disqus_config = function () {
+        this.page.url = 'http://yoursite.com/2020/07/15/blog5/';  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = 'http://yoursite.com/2020/07/15/blog5/'; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+</script>
+
+<script type="text/javascript">
+    $('.btn_click_load').click(function() {  //click to load comments
+        (function() { // DON'T EDIT BELOW THIS LINE
+            var d = document;
+            var s = d.createElement('script');
+            s.src = '//http-miccall-tech.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', + new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+        $('.btn_click_load').css('display','none');
+    });
+</script>
+</div>
+<style>
+    #disqus-comment{
+        background-color: #eee;
+        padding: 2pc;
+    }
+</style>
+
+
+        </div>
+        <!-- Copyright 版权 start -->
+                <div id="copyright">
+            <ul>
+                <li>&copy;Powered By <a href="https://hexo.io/zh-cn/" target="_blank" rel="noopener" style="border-bottom: none;">hexo</a></li>
+                <li>Design: <a href="http://miccall.tech " target="_blank" rel="noopener" style="border-bottom: none;">miccall</a></li>
+            </ul>
+            
+                <span id="busuanzi_container_site_pv">本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+			
+        </div>
+    </div>
+</body>
+
+
+
+ 	
+</html>
