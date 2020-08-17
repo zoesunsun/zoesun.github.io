@@ -139,18 +139,14 @@
 </nav>
 
         <div id="main" >
-            <div class ="post_page_title_img" style="height: 25rem;background-image: url(/images/helloworld.JPG);background-position: center; background-repeat:no-repeat; background-size:cover;-moz-background-size:cover;overflow:hidden;" >
-                <a href="#" style="padding: 4rem 4rem 2rem 4rem ;"><h2 >Golang踩坑——gRPC双向流打标记</h2></a>
+            <div class ="post_page_title_img" style="height: 25rem;background-image: url(/images/blog7.JPG);background-position: center; background-repeat:no-repeat; background-size:cover;-moz-background-size:cover;overflow:hidden;" >
+                <a href="#" style="padding: 4rem 4rem 2rem 4rem ;"><h2 >心跳检测</h2></a>
             </div>
             <!-- Post -->
             <div class="typo" style="padding: 3rem;">
-                <h1 id="Golang踩坑-1"><a href="#Golang踩坑-1" class="headerlink" title="Golang踩坑 1"></a>Golang踩坑 1</h1><p>最近在实习，记录下我踩过的所有坑。   </p>
-<h3 id="需求："><a href="#需求：" class="headerlink" title="需求："></a>需求：</h3><p>mentor今天提了一个需求是：为不同的gRPC双向流打上标记，为了实现将特定的信息传送给特定的终端微服务，我们需要给每一个双向流打上它独有的名称和uuid。同时我们需要为所有的gPRPC开启验证操作，因此我们需要将Token信息从客户端传到服务端。因此我们需要找到一种办法让每个stream携带以上信息。  </p>
-<h3 id="坑："><a href="#坑：" class="headerlink" title="坑："></a>坑：</h3><p>本来想通过context对象自带的withValue()函数实现，但其实在client端为context打的标记并不能传到server端。  </p>
-<h3 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法:"></a>解决方法:</h3><h6 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a>客户端</h6><p>在客户端利用metadata结构创建一个包含目标键值对的metadata.MD对象，利用该对象创建一个context（使用NewOutgoingContext()函数：  </p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">md := metadata.Pairs(</span><br><span class="line">	<span class="string">"tag"</span>, name,</span><br><span class="line">	<span class="string">"uuid"</span>, uuid,</span><br><span class="line">)</span><br><span class="line">ctx, cancel := context.WithCancel(context.Background())</span><br><span class="line">ctx = metadata.NewOutgoingContext(ctx, md)</span><br></pre></td></tr></table></figure>
-<h6 id="服务端"><a href="#服务端" class="headerlink" title="服务端"></a>服务端</h6><p>在服务端使用FromIncomingContext()函数获取stream中携带的metadata信息，通过键访问值：  </p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">md2, _ := metadata.FromIncomingContext(stream.Context())</span><br><span class="line">     <span class="keyword">for</span> _, v := <span class="keyword">range</span> s.DeliverInfo[md2[<span class="string">"tag"</span>][<span class="number">0</span>]]&#123;</span><br><span class="line">		 ...</span><br><span class="line">	 &#125;</span><br></pre></td></tr></table></figure>
+                <h1 id="心跳检测"><a href="#心跳检测" class="headerlink" title="心跳检测"></a>心跳检测</h1><h3 id="需求："><a href="#需求：" class="headerlink" title="需求："></a>需求：</h3><p>为了管理所有网络设备的在线状态，我们为系统设计了心跳检测机制。</p>
+<h5 id="云服务端"><a href="#云服务端" class="headerlink" title="云服务端:"></a>云服务端:</h5><p>该机制有一个关键的数据结构——map。Key是[微服务的名称_UUID]，Value是云端最近一次收到微服务心跳信息包的时间。每当cloud收到一个心跳信息包，他会更新该微服务的最近在线时间。我们还建了另一个map，保存所有manager的stream，Key值是manager的UUID，Value是对应的stream。同时我们启用一个新的goroutine，每隔一段时间（等于心跳发送周期）会遍历所有微服务的最近在线时间，与系统当前时间计算时间差，如果发现间隔超过30秒，将该微服务节点从dgraph数据库删除。同时在最近在线时间的map中也删掉这个Key。如果发现离线设备是manager，从存储stream信息的map中删除。</p>
+<h5 id="Manager端："><a href="#Manager端：" class="headerlink" title="Manager端："></a>Manager端：</h5><p>因为Manager节点要管理很多不同种类的微服务，所以我们设计了另一种map来存储在线设备。其中，Key值是微服务的名字，如restful、TV、projector，Value是stream的切片，存储属于某一类微服务的所有stream。如果我们判断一个设备离线，可以通过最近在线时间map的Key获取微服务名称和UUID，根据名称定位到相应的slice，遍历slice，寻找这个UUID对应的stream并删除。</p>
 
             </div>
 
@@ -213,8 +209,8 @@ $('.btn_click_load').click(function() {
 -->
 <script type="text/javascript">
     var disqus_config = function () {
-        this.page.url = 'http://yoursite.com/2020/07/20/blog1/';  // Replace PAGE_URL with your page's canonical URL variable
-        this.page.identifier = 'http://yoursite.com/2020/07/20/blog1/'; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        this.page.url = 'http://yoursite.com/2020/07/25/blog7/';  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = 'http://yoursite.com/2020/07/25/blog7/'; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
     };
 </script>
 

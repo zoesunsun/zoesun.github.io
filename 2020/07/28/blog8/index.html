@@ -139,14 +139,14 @@
 </nav>
 
         <div id="main" >
-            <div class ="post_page_title_img" style="height: 25rem;background-image: url(/images/blog9.JPG);background-position: center; background-repeat:no-repeat; background-size:cover;-moz-background-size:cover;overflow:hidden;" >
-                <a href="#" style="padding: 4rem 4rem 2rem 4rem ;"><h2 >如何及时关闭带有长休眠周期的Goroutine</h2></a>
+            <div class ="post_page_title_img" style="height: 25rem;background-image: url(/images/blog8.JPG);background-position: center; background-repeat:no-repeat; background-size:cover;-moz-background-size:cover;overflow:hidden;" >
+                <a href="#" style="padding: 4rem 4rem 2rem 4rem ;"><h2 >gRPC双向流异步信息传输，如何保证请求和回应的同步性</h2></a>
             </div>
             <!-- Post -->
             <div class="typo" style="padding: 3rem;">
-                <h1 id="如何及时关闭带有长休眠周期的Goroutine"><a href="#如何及时关闭带有长休眠周期的Goroutine" class="headerlink" title="如何及时关闭带有长休眠周期的Goroutine"></a>如何及时关闭带有长休眠周期的Goroutine</h1><p>最近在实习，记录下我踩过的所有坑。   </p>
-<h3 id="应用场景："><a href="#应用场景：" class="headerlink" title="应用场景："></a>应用场景：</h3><p>我们之前使用一个done channel 来防止Goroutine泄漏，简单来说就是，所有gouroutine都监听这个done channel，当发现channel关闭时，退出goroutine函数。问题在于，假设goroutine所包含的功能每30秒执行一次，也就是说在极端情况下，我们需要等30秒，该Goroutine才能意识到外层函数已经结束，自己需要退出。但我们希望，这个响应时间尽可能短，如1秒立即关闭。 </p>
-<h3 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法:"></a>解决方法:</h3><p>设计一个计数器，循环每一秒循环一次，用来监听done channel， 每循环一次，计数器加一。当计数器为30，执行设定好的功能，同时计数器归零。由此实现了每一秒监听一次channel，每30秒执行一次功能。</p>
+                <h1 id="gRPC双向流异步信息传输，如何保证请求和回应的同步性"><a href="#gRPC双向流异步信息传输，如何保证请求和回应的同步性" class="headerlink" title="gRPC双向流异步信息传输，如何保证请求和回应的同步性"></a>gRPC双向流异步信息传输，如何保证请求和回应的同步性</h1><p>最近在实习，记录下我踩过的所有坑。   </p>
+<h3 id="需求："><a href="#需求：" class="headerlink" title="需求："></a>需求：</h3><p>我们假设在实际应用情境下，会有很多来自网络的request，假设他们需要根据microservice获取回应，我们希望能匹配每一个请求与其对应的回应。<br>我们的网络架构采用了双向流，不能保证回应信息的顺序，因此，难以做到应答的匹配。 </p>
+<h3 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法:"></a>解决方法:</h3><p>利用channel，每当cloud收到一个来自网络的request，cloud会生成一个QueryUUID，同时在全局存储一个键值对，键就是这个QueryUUID，值是一个channel，这个channel被该服务入口函数所监听。所有下发数据包和回应数据包都带有该QueryUUID。当cloud接收到某回应数据包后，解析该数据包并获取其中包含的QueryUUID，在字典中找到该QueryUUID所对应的channel，将数据打入该channel中。当入口函数监听到channel中有数据，从channel中取出并回应给用户，再将键值对删除，防止内存泄漏。同时，我们设置监听时间为10秒，如果十秒内未监听到channel中有数据，关闭连接，将键值对删除。</p>
 
             </div>
 
@@ -209,8 +209,8 @@ $('.btn_click_load').click(function() {
 -->
 <script type="text/javascript">
     var disqus_config = function () {
-        this.page.url = 'http://yoursite.com/2020/08/01/blog9/';  // Replace PAGE_URL with your page's canonical URL variable
-        this.page.identifier = 'http://yoursite.com/2020/08/01/blog9/'; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        this.page.url = 'http://yoursite.com/2020/07/28/blog8/';  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = 'http://yoursite.com/2020/07/28/blog8/'; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
     };
 </script>
 

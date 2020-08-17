@@ -139,14 +139,14 @@
 </nav>
 
         <div id="main" >
-            <div class ="post_page_title_img" style="height: 25rem;background-image: url(/images/blog7.JPG);background-position: center; background-repeat:no-repeat; background-size:cover;-moz-background-size:cover;overflow:hidden;" >
-                <a href="#" style="padding: 4rem 4rem 2rem 4rem ;"><h2 >心跳检测</h2></a>
+            <div class ="post_page_title_img" style="height: 25rem;background-image: url(/images/blog9.JPG);background-position: center; background-repeat:no-repeat; background-size:cover;-moz-background-size:cover;overflow:hidden;" >
+                <a href="#" style="padding: 4rem 4rem 2rem 4rem ;"><h2 >如何及时关闭带有长休眠周期的Goroutine</h2></a>
             </div>
             <!-- Post -->
             <div class="typo" style="padding: 3rem;">
-                <h1 id="心跳检测"><a href="#心跳检测" class="headerlink" title="心跳检测"></a>心跳检测</h1><h3 id="需求："><a href="#需求：" class="headerlink" title="需求："></a>需求：</h3><p>为了管理所有网络设备的在线状态，我们为系统设计了心跳检测机制。</p>
-<h5 id="云服务端"><a href="#云服务端" class="headerlink" title="云服务端:"></a>云服务端:</h5><p>该机制有一个关键的数据结构——map。Key是[微服务的名称_UUID]，Value是云端最近一次收到微服务心跳信息包的时间。每当cloud收到一个心跳信息包，他会更新该微服务的最近在线时间。我们还建了另一个map，保存所有manager的stream，Key值是manager的UUID，Value是对应的stream。同时我们启用一个新的goroutine，每隔一段时间（等于心跳发送周期）会遍历所有微服务的最近在线时间，与系统当前时间计算时间差，如果发现间隔超过30秒，将该微服务节点从dgraph数据库删除。同时在最近在线时间的map中也删掉这个Key。如果发现离线设备是manager，从存储stream信息的map中删除。</p>
-<h5 id="Manager端："><a href="#Manager端：" class="headerlink" title="Manager端："></a>Manager端：</h5><p>因为Manager节点要管理很多不同种类的微服务，所以我们设计了另一种map来存储在线设备。其中，Key值是微服务的名字，如restful、TV、projector，Value是stream的切片，存储属于某一类微服务的所有stream。如果我们判断一个设备离线，可以通过最近在线时间map的Key获取微服务名称和UUID，根据名称定位到相应的slice，遍历slice，寻找这个UUID对应的stream并删除。</p>
+                <h1 id="如何及时关闭带有长休眠周期的Goroutine"><a href="#如何及时关闭带有长休眠周期的Goroutine" class="headerlink" title="如何及时关闭带有长休眠周期的Goroutine"></a>如何及时关闭带有长休眠周期的Goroutine</h1><p>最近在实习，记录下我踩过的所有坑。   </p>
+<h3 id="应用场景："><a href="#应用场景：" class="headerlink" title="应用场景："></a>应用场景：</h3><p>我们之前使用一个done channel 来防止Goroutine泄漏，简单来说就是，所有gouroutine都监听这个done channel，当发现channel关闭时，退出goroutine函数。问题在于，假设goroutine所包含的功能每30秒执行一次，也就是说在极端情况下，我们需要等30秒，该Goroutine才能意识到外层函数已经结束，自己需要退出。但我们希望，这个响应时间尽可能短，如1秒立即关闭。 </p>
+<h3 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法:"></a>解决方法:</h3><p>设计一个计数器，循环每一秒循环一次，用来监听done channel， 每循环一次，计数器加一。当计数器为30，执行设定好的功能，同时计数器归零。由此实现了每一秒监听一次channel，每30秒执行一次功能。</p>
 
             </div>
 
@@ -209,8 +209,8 @@ $('.btn_click_load').click(function() {
 -->
 <script type="text/javascript">
     var disqus_config = function () {
-        this.page.url = 'http://yoursite.com/2020/07/26/blog7/';  // Replace PAGE_URL with your page's canonical URL variable
-        this.page.identifier = 'http://yoursite.com/2020/07/26/blog7/'; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        this.page.url = 'http://yoursite.com/2020/07/31/blog9/';  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = 'http://yoursite.com/2020/07/31/blog9/'; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
     };
 </script>
 
