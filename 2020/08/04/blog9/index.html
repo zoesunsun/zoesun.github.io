@@ -139,18 +139,14 @@
 </nav>
 
         <div id="main" >
-            <div class ="post_page_title_img" style="height: 25rem;background-image: url(/images/helloworld.JPG);background-position: center; background-repeat:no-repeat; background-size:cover;-moz-background-size:cover;overflow:hidden;" >
-                <a href="#" style="padding: 4rem 4rem 2rem 4rem ;"><h2 >Golang踩坑——gRPC双向流打标记</h2></a>
+            <div class ="post_page_title_img" style="height: 25rem;background-image: url(/images/blog9.JPG);background-position: center; background-repeat:no-repeat; background-size:cover;-moz-background-size:cover;overflow:hidden;" >
+                <a href="#" style="padding: 4rem 4rem 2rem 4rem ;"><h2 >如何及时关闭带有长休眠周期的Goroutine</h2></a>
             </div>
             <!-- Post -->
             <div class="typo" style="padding: 3rem;">
-                <h1 id="Golang踩坑-1"><a href="#Golang踩坑-1" class="headerlink" title="Golang踩坑 1"></a>Golang踩坑 1</h1><p>最近在实习，记录下我踩过的所有坑。   </p>
-<h3 id="需求："><a href="#需求：" class="headerlink" title="需求："></a>需求：</h3><p>mentor今天提了一个需求是：为不同的gRPC双向流打上标记，为了实现将特定的信息传送给特定的终端微服务，我们需要给每一个双向流打上它独有的名称和uuid。同时我们需要为所有的gPRPC开启验证操作，因此我们需要将Token信息从客户端传到服务端。因此我们需要找到一种办法让每个stream携带以上信息。  </p>
-<h3 id="坑："><a href="#坑：" class="headerlink" title="坑："></a>坑：</h3><p>本来想通过context对象自带的withValue()函数实现，但其实在client端为context打的标记并不能传到server端。  </p>
-<h3 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法:"></a>解决方法:</h3><h6 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a>客户端</h6><p>在客户端利用metadata结构创建一个包含目标键值对的metadata.MD对象，利用该对象创建一个context（使用NewOutgoingContext()函数：  </p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">md := metadata.Pairs(</span><br><span class="line">	<span class="string">"tag"</span>, name,</span><br><span class="line">	<span class="string">"uuid"</span>, uuid,</span><br><span class="line">)</span><br><span class="line">ctx, cancel := context.WithCancel(context.Background())</span><br><span class="line">ctx = metadata.NewOutgoingContext(ctx, md)</span><br></pre></td></tr></table></figure>
-<h6 id="服务端"><a href="#服务端" class="headerlink" title="服务端"></a>服务端</h6><p>在服务端使用FromIncomingContext()函数获取stream中携带的metadata信息，通过键访问值：  </p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">md2, _ := metadata.FromIncomingContext(stream.Context())</span><br><span class="line">     <span class="keyword">for</span> _, v := <span class="keyword">range</span> s.DeliverInfo[md2[<span class="string">"tag"</span>][<span class="number">0</span>]]&#123;</span><br><span class="line">		 ...</span><br><span class="line">	 &#125;</span><br></pre></td></tr></table></figure>
+                <h1 id="如何及时关闭带有长休眠周期的Goroutine"><a href="#如何及时关闭带有长休眠周期的Goroutine" class="headerlink" title="如何及时关闭带有长休眠周期的Goroutine"></a>如何及时关闭带有长休眠周期的Goroutine</h1><p>最近在实习，记录下我踩过的所有坑。   </p>
+<h3 id="应用场景："><a href="#应用场景：" class="headerlink" title="应用场景："></a>应用场景：</h3><p>我们之前使用一个done channel 来防止Goroutine泄漏，简单来说就是，所有gouroutine都监听这个done channel，当发现channel关闭时，退出goroutine函数。问题在于，假设goroutine所包含的功能每30秒执行一次，也就是说在极端情况下，我们需要等30秒，该Goroutine才能意识到外层函数已经结束，自己需要退出。但我们希望，这个响应时间尽可能短，如1秒立即关闭。 </p>
+<h3 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法:"></a>解决方法:</h3><p>设计一个计数器，循环每一秒循环一次，用来监听done channel， 每循环一次，计数器加一。当计数器为30，执行设定好的功能，同时计数器归零。由此实现了每一秒监听一次channel，每30秒执行一次功能。</p>
 
             </div>
 
@@ -213,8 +209,8 @@ $('.btn_click_load').click(function() {
 -->
 <script type="text/javascript">
     var disqus_config = function () {
-        this.page.url = 'http://yoursite.com/2020/07/19/blog1/';  // Replace PAGE_URL with your page's canonical URL variable
-        this.page.identifier = 'http://yoursite.com/2020/07/19/blog1/'; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        this.page.url = 'http://yoursite.com/2020/08/04/blog9/';  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = 'http://yoursite.com/2020/08/04/blog9/'; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
     };
 </script>
 
